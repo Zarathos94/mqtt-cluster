@@ -1,0 +1,45 @@
+version: '3'
+services:
+  db:
+    restart: always
+    image: sameersbn/postgresql:10-1
+    networks:
+      default:
+        aliases:
+          - postgres
+    ports:
+      - "5555:5432"
+    environment:
+      - DEBUG=false
+
+      - DB_USER=mqtt
+      - DB_PASS=mqtt
+      - DB_NAME=mqtt-auth
+      - DB_TEMPLATE=
+
+      - DB_EXTENSION=
+
+      - REPLICATION_MODE=
+      - REPLICATION_USER=
+      - REPLICATION_PASS=
+      - REPLICATION_SSLMODE=
+    volumes:
+      - /tmp/docker/postgresql:/var/lib/postgresql
+  mqtt-auth-api:
+    build: mqtt-auth-api/.
+    env_file: 
+      - ./mqtt-auth-api/.env
+    networks:
+      default:
+        aliases:
+          - auth-api
+    ports:
+      - "80:8080"
+    depends_on:
+      - db
+  mqtt:
+    build: .
+    env_file: 
+      - .env
+    depends_on:
+      - mqtt-auth-api
